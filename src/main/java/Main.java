@@ -65,13 +65,13 @@ public class Main {
 
             filas.forEach(
                     (key, value) ->
-                            value.filaList[0] = filas.get("Q1").getTempoChegada());
+                            value.filaList[0] = filas.get("F1").getTempoChegada());
 
             estadoFilas.forEach(
                     (key, value) ->
                             value.add(new EstadoFila("chegada", 1, 1.00, filas.get(key).filaList.clone())));
 
-            chegada("Q1", filas.get("Q1").getTempoChegada());
+            chegada("F1", filas.get("F1").getTempoChegada());
             System.out.println();
             while (!listaAleatorios.isEmpty()) {
                 try {
@@ -123,7 +123,7 @@ public class Main {
             writer.close();
             System.out.println("Output of execution " + (i + 1) + " saved.\n");
         }
-        System.out.println("Queue simulation has finished.");
+        System.out.println("Simulação da fila foi encerrada.");
     }
 
     private static String proxFila(String from) {
@@ -138,6 +138,7 @@ public class Main {
             double next = routing.get(key);
             if (floor <= random && random <= floor + next) {
                 return key.split("\\s")[1];
+//                return key;
             }
             floor += next;
         }
@@ -164,7 +165,7 @@ public class Main {
             if (listaAleatorios.isEmpty())
                 return;
             this.fila = fila;
-            this.proximaFilaOpcional = proximaFilaOpcional;
+            this.proximaFilaOpcional = proximaFila;
             this.evento = evento;
             Fila f = filas.get(fila);
             double rd = listaAleatorios.remove(0);
