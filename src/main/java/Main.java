@@ -23,8 +23,21 @@ public class Main {
         File output = new File("./output.txt");
         if (output.exists()) output.delete();
 
+        int aleatorioPorSeed = 100;
+        List<Integer> seeds = Arrays.asList(7, 14, 4783, 432, 11);
+        Map<String, Double> chegadas = Map.of("F1", 1.0);
+        FilaDTO f1 = new FilaDTO(1, null, 1.0, 4.0, 1.0, 1.5);
+        FilaDTO f2 = new FilaDTO(1, 3, null, null, 5.0, 10.0);
+        FilaDTO f3 = new FilaDTO(2, 8, null, null, 10.0, 20.0);
+        Map<String, FilaDTO> filasConfig = Map.of("F1", f1, "F2", f2, "F3", f3);
+        Map<String, Double> transferenciasF1 = Map.of("F2", 0.8, "F3", 0.2);
+        Map<String, Double> transferenciasF2 = Map.of("F1", 0.3, "F3", 0.5, "SAIDA", 0.2);
+        Map<String, Double> transferenciasF3 = Map.of("F2", 0.7, "SAIDA", 0.3);
+        Map<String, Map<String, Double>> transferencias = Map.of("F1", transferenciasF1, "F2", transferenciasF2, "F3", transferenciasF3);
+
         //dto.ConfigDTO config = FileReader.readConfigFileFromPath(args[0]);
-        //boolean withCsv = args.length == 2 && Objects.equals(args[1], "with-csv");
+        boolean withCsv = args.length == 1 && Objects.equals(args[0], "with-csv");
+        Config config = new Config(aleatorioPorSeed, "tandem", seeds, chegadas, filasConfig, transferencias);
 
         // numero de execuçoes
         execucoes = config.getSeeds().size();
@@ -34,7 +47,7 @@ public class Main {
             System.out.println("Executing queue simulation using seed: " + config.getSeeds().get(i));
 
             // n sei qq isso
-            System.out.println("Simulation mode: " + config.getMode());
+            System.out.println("Simulation mode: " + config.getModo());
             listaEscalonador = new ArrayList<>();
 
             // constroi filas e estado das filas
@@ -44,7 +57,7 @@ public class Main {
             // cria lista de aleatorios
             listaAleatorios = new ArrayList<>();
             listaAleatorios.addAll(
-                    ListGenerator.generateListOfRandomNumbers(config.getSeeds().get(i), config.getRandNumbersPerSeed()));
+                    GeradorAleatorios.gerarListaAleatorios(config.getSeeds().get(i), config.getAleatorioPorSeed()));
 
             estadoFilas.forEach(
                     (key, value) ->
@@ -69,7 +82,7 @@ public class Main {
 
                     switch (menor.evento.toLowerCase()) {
                         case CHEGADA: {
-                            chegada("Q1", menor.tempoBruto);
+                            chegada("F1", menor.tempoBruto);
                             break;
                         }
                         case PASSAGEM: {
@@ -103,8 +116,8 @@ public class Main {
                 writer.write("Total Time: " + item.getValue().get(item.getValue().size() - 1).getTempoTotal() + "\n");
                 writer.write("----------------------------------------------------\n");
                 Integer aux = filas.get(item.getKey()).getCapacidade();
-//                if (withCsv)
-//                    CsvHelper.saveCsvFile(new File("output" + (i + 1) + item.getKey() + ".csv"), item.getValue(), aux == null ? 100 : aux + 1);
+                if (withCsv)
+                    CsvHelper.saveCsvFile(new File("output" + (i + 1) + item.getKey() + ".csv"), item.getValue(), aux == null ? 100 : aux + 1);
             }
             writer.write("\n\n");
             writer.close();

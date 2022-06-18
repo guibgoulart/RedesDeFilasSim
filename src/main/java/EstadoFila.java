@@ -77,7 +77,7 @@ public class EstadoFila {
         this.tempoTotal = tempoTotal;
     }
 
-//    public String toStringCsvFile() {
-//        return event + ";" + queue + ";" + String.format("%.04f", time) + ";" + Arrays.stream(occupiedQueueTime).mapToObj(queue -> String.format("%.04f", queue)).collect(Collectors.joining(";")) + "\n";
-//    }
+    public String toStringCsvFile() {
+        return evento + ";" + fila + ";" + String.format("%.04f", tempo) + ";" + Arrays.stream(tempoNaFila).mapToObj(fila -> String.format("%.04f", fila)).collect(Collectors.joining(";")) + "\n";
+    }
 }
