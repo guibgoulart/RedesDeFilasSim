@@ -30,9 +30,10 @@ public class Main {
         FilaDTO f2 = new FilaDTO(1, 3, null, null, 5.0, 10.0);
         FilaDTO f3 = new FilaDTO(2, 8, null, null, 10.0, 20.0);
         Map<String, FilaDTO> filasConfig = Map.of("F1", f1, "F2", f2, "F3", f3);
-        Map<String, Double> transferenciasF1 = Map.of("F2", 0.8, "F3", 0.2);
-        Map<String, Double> transferenciasF2 = Map.of("F1", 0.3, "F3", 0.5, "SAIDA", 0.2);
-        Map<String, Double> transferenciasF3 = Map.of("F2", 0.7, "SAIDA", 0.3);
+//        LinkedHashMap<String, Double> transferenciasF1 = (LinkedHashMap<String, Double>) Map.of("F2", 0.8, "F3", 0.2);
+        Map<String, Double> transferenciasF1 = Map.of("0 F2", 0.8, "1 F3", 0.2);
+        Map<String, Double> transferenciasF2 = Map.of("0 F1", 0.3, "1 F3", 0.5, "2 SAIDA", 0.2);
+        Map<String, Double> transferenciasF3 = Map.of("0 F2", 0.7, "1 SAIDA", 0.3);
         Map<String, Map<String, Double>> transferencias = Map.of("F1", transferenciasF1, "F2", transferenciasF2, "F3", transferenciasF3);
 
         //dto.ConfigDTO config = FileReader.readConfigFileFromPath(args[0]);
@@ -65,13 +66,13 @@ public class Main {
 
             filas.forEach(
                     (key, value) ->
-                            value.filaList[0] = filas.get("Q1").getTempoChegada());
+                            value.filaList[0] = filas.get("F1").getTempoChegada());
 
             estadoFilas.forEach(
                     (key, value) ->
                             value.add(new EstadoFila("chegada", 1, 1.00, filas.get(key).filaList.clone())));
 
-            chegada("Q1", filas.get("Q1").getTempoChegada());
+            chegada("F1", filas.get("F1").getTempoChegada());
             System.out.println();
             while (!listaAleatorios.isEmpty()) {
                 try {
@@ -123,7 +124,7 @@ public class Main {
             writer.close();
             System.out.println("Output of execution " + (i + 1) + " saved.\n");
         }
-        System.out.println("Queue simulation has finished.");
+        System.out.println("Simulação da fila foi encerrada.");
     }
 
     private static String proxFila(String from) {
@@ -138,6 +139,7 @@ public class Main {
             double next = routing.get(key);
             if (floor <= random && random <= floor + next) {
                 return key.split("\\s")[1];
+//                return key;
             }
             floor += next;
         }
@@ -164,7 +166,7 @@ public class Main {
             if (listaAleatorios.isEmpty())
                 return;
             this.fila = fila;
-            this.proximaFilaOpcional = proximaFilaOpcional;
+            this.proximaFilaOpcional = proximaFila;
             this.evento = evento;
             Fila f = filas.get(fila);
             double rd = listaAleatorios.remove(0);
