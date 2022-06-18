@@ -37,7 +37,9 @@ public class Main {
     }
 
     File outputDir = new File("./output");
-    outputDir.mkdir();
+    if(!outputDir.exists()) {
+      outputDir.mkdir();
+    }
     File output = new File("./output/output.txt");
       if (output.exists()) {
           output.delete();
