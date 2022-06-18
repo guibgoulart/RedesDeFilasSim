@@ -30,9 +30,9 @@ public class Main {
         FilaDTO f2 = new FilaDTO(1, 3, null, null, 5.0, 10.0);
         FilaDTO f3 = new FilaDTO(2, 8, null, null, 10.0, 20.0);
         Map<String, FilaDTO> filasConfig = Map.of("F1", f1, "F2", f2, "F3", f3);
-        Map<String, Double> transferenciasF1 = Map.of("F2", 0.8, "F3", 0.2);
-        Map<String, Double> transferenciasF2 = Map.of("F1", 0.3, "F3", 0.5, "SAIDA", 0.2);
-        Map<String, Double> transferenciasF3 = Map.of("F2", 0.7, "SAIDA", 0.3);
+        LinkedHashMap<String, Double> transferenciasF1 = montarDicionario(List.of("F2", "F3"), List.of(0.8, 0.2));
+        LinkedHashMap<String, Double> transferenciasF2 = montarDicionario(List.of("F1", "F3", "SAIDA"), List.of(0.3, 0.5, 0.2));
+        LinkedHashMap<String, Double> transferenciasF3 = montarDicionario(List.of("F2", "SAIDA"), List.of(0.7, 0.3));
         Map<String, Map<String, Double>> transferencias = Map.of("F1", transferenciasF1, "F2", transferenciasF2, "F3", transferenciasF3);
 
         //dto.ConfigDTO config = FileReader.readConfigFileFromPath(args[0]);
@@ -246,5 +246,14 @@ public class Main {
 
     private static Escalonador menor() {
         return listaEscalonador.stream().min((o1, o2) -> o1.tempoBruto < o2.tempoBruto ? -1 : 1).get();
+    }
+
+    private static LinkedHashMap<String, Double> montarDicionario(List<String> chaves, List<Double> valores) {
+        if (chaves.size() != valores.size()) return null;
+        LinkedHashMap<String, Double> dicionario = new LinkedHashMap<>();
+        while(chaves.size() > 0 && valores.size() > 0) {
+            dicionario.put(chaves.remove(0), valores.remove(0));
+        }
+        return dicionario;
     }
 }
