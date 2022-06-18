@@ -32,9 +32,9 @@ public class Main {
   static ArrayList<Double> listaAleatorios;
 
   public static void main(String[] args) throws IOException {
-    if (args.length == 0) {
-        return;
-    }
+//    if (args.length == 0) {
+//        return;
+//    }
 
     // criação de arquivos de output
     File outputDir = new File("./output");
@@ -61,7 +61,7 @@ public class Main {
     Map<String, Map<String, Double>> transferencias = Map.of("F1", transferenciasF1, "F2", transferenciasF2, "F3",
         transferenciasF3);
 
-    boolean withCsv = args.length == 1 && Objects.equals(args[0], "with-csv");
+//    boolean withCsv = args.length == 1 && Objects.equals(args[0], "with-csv");
     Config config = new Config(aleatorioPorSeed, "tandem", seeds, chegadas, filasConfig, transferencias);
 
     // numero de execuçoes
@@ -160,10 +160,10 @@ public class Main {
         writer.write("Tempo total: " + item.getValue().get(item.getValue().size() - 1).getTempoTotal() + "\n");
         writer.write("#############################################\n");
         Integer aux = filas.get(item.getKey()).getCapacidade();
-          if (withCsv) {
-            CsvHelper.saveCsvFile(new File("./output/output" + (i + 1) + item.getKey() + ".csv"), item.getValue(),
-              aux == null ? 100 : aux + 1);
-          }
+//          if (withCsv) {
+//            CsvHelper.saveCsvFile(new File("./output/output" + (i + 1) + item.getKey() + ".csv"), item.getValue(),
+//              aux == null ? 100 : aux + 1);
+//          }
       }
       writer.write("\n\n");
       writer.close();
