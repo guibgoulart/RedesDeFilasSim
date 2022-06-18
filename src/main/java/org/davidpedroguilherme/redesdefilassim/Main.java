@@ -36,6 +36,7 @@ public class Main {
         return;
     }
 
+    // criação de arquivos de output
     File outputDir = new File("./output");
     if(!outputDir.exists()) {
       outputDir.mkdir();
@@ -45,6 +46,7 @@ public class Main {
           output.delete();
       }
 
+    // instanciamento de variáveis de execução
     int aleatorioPorSeed = 100;
     List<Integer> seeds = Arrays.asList(7, 14, 4783, 432, 11);
     Map<String, Double> chegadas = Map.of("F1", 1.0);
@@ -67,10 +69,9 @@ public class Main {
 
     for (int i = 0; i < execucoes; i++) {
       // qual seed estamos usando
-      System.out.println("Executing queue simulation using seed: " + config.getSeeds().get(i));
+      System.out.println("Executando simulação utilizando seed: " + config.getSeeds().get(i));
 
-      // n sei qq isso
-      System.out.println("Simulation mode: " + config.getModo());
+      System.out.println("Modo de simulação: " + config.getModo());
       listaEscalonador = new ArrayList<>();
 
       // constroi filas e estado das filas
@@ -82,6 +83,7 @@ public class Main {
       listaAleatorios.addAll(
           GeradorAleatorios.gerarListaAleatorios(config.getSeeds().get(i), config.getAleatorioPorSeed()));
 
+      // inserção de valores iniciais
       estadoFilas.forEach(
         (key, value) ->
           value.add(new EstadoFila("-", 0, 0.00, filas.get(key).filaList.clone())));
@@ -96,39 +98,67 @@ public class Main {
 
       chegada("F1", filas.get("F1").getTempoChegada());
       System.out.println();
-      while (!listaAleatorios.isEmpty()) {
+
+      while (!listaAleatorios.isEmpty()) { // laço geral de execução
         try {
-          Escalonador menor = menor();
+          Escalonador menor = menor(); // instanciamento de escalonador
           filas.forEach(
             (key, value) ->
               value.filaList[value.getContAtual()] += menor.tempoBruto - tempo);
 
-          switch (menor.evento.toLowerCase()) {
+          switch (menor.evento.toLowerCase()) { // verifica qual o próximo evento
             case CHEGADA -> chegada("F1", menor.tempoBruto);
             case PASSAGEM -> passagem(menor.fila, menor.proximaFilaOpcional, menor.tempoBruto);
             case SAIDA -> saida(menor.fila, menor.tempoBruto);
             default -> throw new RuntimeException();
           }
-          estadoFilas.forEach(
+
+          estadoFilas.forEach(  // adiciona um novo estado na fila
             (key, value) -> value.add(
               new EstadoFila(menor.evento, filas.get(key).getContAtual(),
                 menor.tempoBruto, filas.get(key).filaList.clone())));
-          listaEscalonador.remove(menor);
+          listaEscalonador.remove(menor); // remove o último a ser executado
         } catch (Exception e) {
           e.printStackTrace();
         }
       }
 
-      BufferedWriter writer = new BufferedWriter(new FileWriter(output, true));
+      BufferedWriter writer = new BufferedWriter(new FileWriter(output, true)); // inicia escrita nos arquivos
 
-      writer.write("Execution: " + (i + 1) + ":\n");
+      writer.write("\n" +
+              "\n" +
+              "                                                       \n" +
+              " ____ ___ __  __ _   _ _        _    ____   ___  ____  \n" +
+              "/ ___|_ _|  \\/  | | | | |      / \\  |  _ \\ / _ \\|  _ \\ \n" +
+              "\\___ \\| || |\\/| | | | | |     / _ \\ | | | | | | | |_) |\n" +
+              " ___) | || |  | | |_| | |___ / ___ \\| |_| | |_| |  _ < \n" +
+              "|____|___|_|  |_|\\___/|_____/_/   \\_|____/ \\___/|_| \\_\\\n" +
+              "                                                       \n" +
+              "                                                       \n" +
+              "                     ____  _____                       \n" +
+              "                    |  _ \\| ____|                      \n" +
+              "                    | | | |  _|                        \n" +
+              "                    | |_| | |___                       \n" +
+              "                    |____/|_____|                      \n" +
+              "                                                       \n" +
+              "                                                       \n" +
+              "            _____ ___ _        _    ____               \n" +
+              "           |  ___|_ _| |      / \\  / ___|              \n" +
+              "           | |_   | || |     / _ \\ \\___ \\              \n" +
+              "           |  _|  | || |___ / ___ \\ ___) |             \n" +
+              "           |_|   |___|_____/_/   \\_|____/              \n" +
+              "                                                       \n" +
+              "\n");
+      writer.write("Desenvolvido em junho de 2022 por Guilherme Goulart, Pedro Portella e David Neto");
+      writer.write("Para a cadeira de Simulação e Métodos Analíticos da PUCRS ministrada pelo professor Afonso Sales");
+      writer.write("Execução: " + (i + 1) + ":\n");
       for (Map.Entry<String, List<EstadoFila>> item : estadoFilas.entrySet()) {
-        writer.write("Queue: " + item.getKey() + "\n");
-        writer.write("Queue final state: " + item.getValue().get(item.getValue().size() - 1) + "\n");
+        writer.write("Fila: " + item.getKey() + "\n");
+        writer.write("Estado final da fila: " + item.getValue().get(item.getValue().size() - 1) + "\n");
         writer.write(
-            "Percentages: " + item.getValue().get(item.getValue().size() - 1).computaPorcentagem().toString() + "\n");
-        writer.write("Total Time: " + item.getValue().get(item.getValue().size() - 1).getTempoTotal() + "\n");
-        writer.write("----------------------------------------------------\n");
+            "Porcentagens: " + item.getValue().get(item.getValue().size() - 1).computaPorcentagem().toString() + "\n");
+        writer.write("Tempo total: " + item.getValue().get(item.getValue().size() - 1).getTempoTotal() + "\n");
+        writer.write("#############################################\n");
         Integer aux = filas.get(item.getKey()).getCapacidade();
           if (withCsv) {
             CsvHelper.saveCsvFile(new File("./output/output" + (i + 1) + item.getKey() + ".csv"), item.getValue(),
@@ -137,9 +167,8 @@ public class Main {
       }
       writer.write("\n\n");
       writer.close();
-      System.out.println("Output of execution " + (i + 1) + " saved.\n");
     }
-    System.out.println("Simulação da fila foi encerrada.");
+    System.out.println("Simulação da fila encerrada.");
   }
 
   private static String proxFila(String from) {
@@ -157,16 +186,15 @@ public class Main {
       }
       floor += next;
     }
-    System.err.printf("Incorrect queue routing in sample.yaml, for queue \"%s\".\n", from);
     return "";
   }
 
   private static void chegada(String fila, double temp) {
     tempo = temp;
     Fila f = filas.get(fila);
-    if (f.getCapacidade() == null || f.getContAtual() < f.getCapacidade()) { // if can add more
+    if (f.getCapacidade() == null || f.getContAtual() < f.getCapacidade()) { // verifica se tem capacidade
       f.setContAtual(f.getContAtual() + 1);
-      if (f.getContAtual() <= f.getServidores()) { // if can auto-attended
+      if (f.getContAtual() <= f.getServidores()) { // verifica se pode realizar auto-atendimento
         agendaMovimentoFila(fila);
       }
     }
@@ -184,7 +212,7 @@ public class Main {
     Fila dest = filas.get(para);
 
     origem.setContAtual(origem.getContAtual() - 1);
-    if (origem.getContAtual() >= origem.getServidores()) { // if source server can serve
+    if (origem.getContAtual() >= origem.getServidores()) {
       agendaMovimentoFila(de);
     }
     if (dest.getCapacidade() != null && dest.getContAtual() >= dest.getCapacidade()) {
@@ -209,10 +237,10 @@ public class Main {
   private static void agendaMovimentoFila(String fila) {
     String proximaFila = proxFila(fila);
     if (proximaFila.isEmpty()) {
-      System.err.println("Queue doesn't have any destination nor exit");
+      System.err.println("Fila não tem próximo destino nem saída");
     } else if (proximaFila.equalsIgnoreCase(SAIDA)) {
       listaEscalonador.add(new Escalonador(fila, SAIDA));
-    } else if (filas.get(fila).getContAtual() > 0) { // action loss
+    } else if (filas.get(fila).getContAtual() > 0) {
       listaEscalonador.add(new Escalonador(fila, proximaFila, PASSAGEM));
     }
   }
