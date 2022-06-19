@@ -13,7 +13,7 @@ import java.util.Map;
 
 import org.davidpedroguilherme.redesdefilassim.objetos.EstadoFila;
 import org.davidpedroguilherme.redesdefilassim.objetos.Fila;
-import org.davidpedroguilherme.redesdefilassim.objetos.FilaDTO;
+import org.davidpedroguilherme.redesdefilassim.objetos.FilaEntidade;
 import org.davidpedroguilherme.redesdefilassim.util.Config;
 import org.davidpedroguilherme.redesdefilassim.util.FilaBuilder;
 
@@ -48,10 +48,10 @@ public class Main {
     int aleatorioPorSeed = 100;
     List<Integer> seeds = Arrays.asList(7, 14, 4783, 432, 11);
     Map<String, Double> chegadas = Map.of("F1", 1.0);
-    FilaDTO f1 = new FilaDTO(1, null, 1.0, 4.0, 1.0, 1.5);
-    FilaDTO f2 = new FilaDTO(1, 3, null, null, 5.0, 10.0);
-    FilaDTO f3 = new FilaDTO(2, 8, null, null, 10.0, 20.0);
-    Map<String, FilaDTO> filasConfig = Map.of("F1", f1, "F2", f2, "F3", f3);
+    FilaEntidade f1 = new FilaEntidade(1, null, 1.0, 4.0, 1.0, 1.5);
+    FilaEntidade f2 = new FilaEntidade(1, 3, null, null, 5.0, 10.0);
+    FilaEntidade f3 = new FilaEntidade(2, 8, null, null, 10.0, 20.0);
+    Map<String, FilaEntidade> filasConfig = Map.of("F1", f1, "F2", f2, "F3", f3);
     LinkedHashMap<String, Double> transferenciasF1 = montarDicionario(List.of("F2", "F3"), List.of(0.8, 0.2));
     LinkedHashMap<String, Double> transferenciasF2 = montarDicionario(List.of("F1", "F3", "SAIDA"),
         List.of(0.3, 0.5, 0.2));
@@ -101,15 +101,15 @@ public class Main {
       listaEscalonador = new ArrayList<>();
 
       // constroi filas e estado das filas
-      filas = FilaBuilder.buildQueues(config);
-      estadoFilas = FilaBuilder.buildQueueStates(config);
+      filas = FilaBuilder.criaFila(config);
+      estadoFilas = FilaBuilder.criaEstadoFila(config);
 
       // cria lista de aleatorios
       listaAleatorios = new ArrayList<>();
       listaAleatorios.addAll(
           GeradorAleatorios.gerarListaAleatorios(config.getSeeds().get(i), config.getAleatorioPorSeed()));
 
-      // inserção de valores iniciais
+      // inserção dos valores nulos (primeira linha)
       estadoFilas.forEach(
         (key, value) ->
           value.add(new EstadoFila("-", 0, 0.00, filas.get(key).filaList.clone())));
@@ -118,32 +118,34 @@ public class Main {
         (key, value) ->
           value.filaList[0] = filas.get("F1").getTempoChegada());
 
+      // inserção do primeiro evento (chegada)
       estadoFilas.forEach(
         (key, value) ->
           value.add(new EstadoFila("chegada", 1, 1.00, filas.get(key).filaList.clone())));
 
+      // executa primeira chegada
       chegada("F1", filas.get("F1").getTempoChegada());
       System.out.println();
 
       while (!listaAleatorios.isEmpty()) { // laço geral de execução
         try {
-          Escalonador menor = menor(); // instanciamento de escalonador
+          Escalonador menorTempo = menor(); // recupera o evento com o menor tempo
           filas.forEach(
             (key, value) ->
-              value.filaList[value.getContAtual()] += menor.tempoBruto - tempo);
+              value.filaList[value.getContAtual()] += menorTempo.tempoBruto - tempo); // atualiza o tempo de todas tabelas pois um evento novo ocorreu
 
-          switch (menor.evento.toLowerCase()) { // verifica qual o próximo evento
-            case CHEGADA -> chegada("F1", menor.tempoBruto);
-            case PASSAGEM -> passagem(menor.fila, menor.proximaFilaOpcional, menor.tempoBruto);
-            case SAIDA -> saida(menor.fila, menor.tempoBruto);
+          switch (menorTempo.evento.toLowerCase()) { // verifica qual o próximo evento
+            case CHEGADA -> chegada("F1", menorTempo.tempoBruto);
+            case PASSAGEM -> passagem(menorTempo.fila, menorTempo.proximaFilaOpcional, menorTempo.tempoBruto);
+            case SAIDA -> saida(menorTempo.fila, menorTempo.tempoBruto);
             default -> throw new RuntimeException();
           }
 
           estadoFilas.forEach(  // adiciona um novo estado na fila
             (key, value) -> value.add(
-              new EstadoFila(menor.evento, filas.get(key).getContAtual(),
-                menor.tempoBruto, filas.get(key).filaList.clone())));
-          listaEscalonador.remove(menor); // remove o último a ser executado
+              new EstadoFila(menorTempo.evento, filas.get(key).getContAtual(),
+                menorTempo.tempoBruto, filas.get(key).filaList.clone())));
+          listaEscalonador.remove(menorTempo); // remove o último evento executado
         } catch (Exception e) {
           e.printStackTrace();
         }
@@ -178,25 +180,25 @@ public class Main {
     System.out.println("Simulação da fila encerrada.");
   }
 
-  private static String proxFila(String from) {
+  private static String proxFila(String de) { // método para lidar com roteamento de uma fila para outra
     double random = listaAleatorios.remove(0);
-    Map<String, Double> routing = filas.get(from).getRouting();
-    String[] chavesOrdenadas = filas.get(from).orderedKeys;
+    Map<String, Double> routing = filas.get(de).getRouting();
+    String[] chavesOrdenadas = filas.get(de).chavesOrdenadas;
     if (routing == null || chavesOrdenadas == null) {
       return "";
     }
-    double floor = 0;
-    for (String key : chavesOrdenadas) {
-      double next = routing.get(key);
-      if (floor <= random && random <= floor + next) {
+    double aux = 0;
+    for (String key : chavesOrdenadas) { // como uma fila pode ter multiplas saidas e essas saidas tem prob diferentes, precisamos garantir que o periodo vai estar na ordem certa
+      double prox = routing.get(key);
+      if (aux <= random && random <= aux + prox) {
         return key;
       }
-      floor += next;
+      aux += prox;
     }
     return "";
   }
 
-  private static void chegada(String fila, double temp) {
+  private static void chegada(String fila, double temp) { // método para lidar com chegada
     tempo = temp;
     Fila f = filas.get(fila);
     if (f.getCapacidade() == null || f.getContAtual() < f.getCapacidade()) { // verifica se tem capacidade
@@ -208,7 +210,7 @@ public class Main {
     listaEscalonador.add(new Escalonador(fila, CHEGADA));
   }
 
-  private static void passagem(String de, String para, double temp) {
+  private static void passagem(String de, String para, double temp) { // metodo de executar passagem
     tempo = temp;
 
     if (de.equals("") || para.equals("")) {
@@ -219,29 +221,29 @@ public class Main {
     Fila dest = filas.get(para);
 
     origem.setContAtual(origem.getContAtual() - 1);
-    if (origem.getContAtual() >= origem.getServidores()) {
+    if (origem.getContAtual() >= origem.getServidores()) { // verifica se há possibilidade de passagem
       agendaMovimentoFila(de);
     }
     if (dest.getCapacidade() != null && dest.getContAtual() >= dest.getCapacidade()) {
       return;
     }
     dest.setContAtual(dest.getContAtual() + 1);
-    if (dest.getContAtual() <= dest.getServidores()) {
-      listaEscalonador.add(new Escalonador(para, SAIDA));
+    if (dest.getContAtual() <= dest.getServidores()) { // verifica se há possibilidade de saída
+      listaEscalonador.add(new Escalonador(para, SAIDA)); // agenda saida
     }
   }
 
-  private static void saida(String fila, double temp) {
+  private static void saida(String fila, double temp) { // metodo de executar saida
     tempo = temp;
     Fila f = filas.get(fila);
 
     f.setContAtual(f.getContAtual() - 1);
-    if (f.getContAtual() >= f.getServidores()) {
+    if (f.getContAtual() >= f.getServidores()) { // verifica se ha possibilidade de saida
       agendaMovimentoFila(fila);
     }
   }
 
-  private static void agendaMovimentoFila(String fila) {
+  private static void agendaMovimentoFila(String fila) { // metodo de agendar eventos
     String proximaFila = proxFila(fila);
     if (proximaFila.isEmpty()) {
       System.err.println("Fila não tem próximo destino nem saída");
@@ -252,11 +254,11 @@ public class Main {
     }
   }
 
-  private static Escalonador menor() {
+  private static Escalonador menor() { // metodo para recuperar evento com menor tempo
     return listaEscalonador.stream().min((o1, o2) -> o1.tempoBruto < o2.tempoBruto ? -1 : 1).get();
   }
 
-  private static LinkedHashMap<String, Double> montarDicionario(List<String> chaves, List<Double> valores) {
+  private static LinkedHashMap<String, Double> montarDicionario(List<String> chaves, List<Double> valores) { // metodo para facilitar instanciamento
     if (chaves.size() != valores.size()) {
         return null;
     }
@@ -267,7 +269,7 @@ public class Main {
     return dicionario;
   }
 
-  private static class Escalonador {
+  private static class Escalonador { // classe responsavel pela tabela de eventos
 
     String fila;
     String proximaFilaOpcional;

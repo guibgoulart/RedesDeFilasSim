@@ -4,7 +4,7 @@ import java.util.Map;
 
 public class Fila {
 
-  final public String[] orderedKeys;
+  final public String[] chavesOrdenadas;
   public double[] filaList;
   private String nome;
   private Double tempoChegada;
@@ -18,21 +18,21 @@ public class Fila {
   private Double maxSaida;
   private Map<String, Double> routing;
 
-  public Fila(String nome, Double tempoChegada, FilaDTO filaDTO, Map<String, Double> routing) {
+  public Fila(String nome, Double tempoChegada, FilaEntidade filaEntidade, Map<String, Double> routing) {
     this.nome = nome;
     this.tempoChegada = tempoChegada;
-    this.capacidade = filaDTO.getCapacidade();
+    this.capacidade = filaEntidade.getCapacidade();
     this.tempoAtual = 0.0;
     this.contAtual = 0;
-    this.servidores = filaDTO.getServidores();
-    this.minChegada = filaDTO.getMinChegada();
-    this.maxChegada = filaDTO.getMaxChegada();
-    this.minSaida = filaDTO.getMinSaida();
-    this.maxSaida = filaDTO.getMaxSaida();
-    this.filaList = new double[this.capacidade == null ? 100 : filaDTO.getCapacidade() + 1];
+    this.servidores = filaEntidade.getServidores();
+    this.minChegada = filaEntidade.getMinChegada();
+    this.maxChegada = filaEntidade.getMaxChegada();
+    this.minSaida = filaEntidade.getMinSaida();
+    this.maxSaida = filaEntidade.getMaxSaida();
+    this.filaList = new double[this.capacidade == null ? 100 : filaEntidade.getCapacidade() + 1];
     this.routing = routing;
-    orderedKeys = routing.keySet()
-        .stream().sorted((a, b) -> a.split("\\s")[0].compareTo(b.split("\\s")[0]))
+    chavesOrdenadas = routing.keySet()
+        .stream()
         .toArray(String[]::new);
   }
 
@@ -50,7 +50,7 @@ public class Fila {
 
   @Override
   public String toString() {
-    return "org.davidpedroguilherme.redesdefilassim.objetos.Fila {" +
+    return "Fila {" +
         "nome: '" + nome + '\'' +
         '}';
   }

@@ -1,6 +1,6 @@
 package org.davidpedroguilherme.redesdefilassim.objetos;
 
-public class FilaDTO {
+public class FilaEntidade {
 
   private int servidores;
   private Integer capacidade;
@@ -9,12 +9,12 @@ public class FilaDTO {
   private Double minSaida;
   private Double maxSaida;
 
-  public FilaDTO() {
+  public FilaEntidade() {
 
   }
 
-  public FilaDTO(int servidores, Integer capacidade, Double minChegada, Double maxChegada, Double minSaida,
-      Double maxSaida) {
+  public FilaEntidade(int servidores, Integer capacidade, Double minChegada, Double maxChegada, Double minSaida,
+                      Double maxSaida) {
     this.servidores = servidores;
     this.capacidade = capacidade;
     this.minChegada = minChegada;

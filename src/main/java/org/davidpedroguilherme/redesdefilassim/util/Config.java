@@ -2,7 +2,7 @@ package org.davidpedroguilherme.redesdefilassim.util;
 
 import java.util.List;
 import java.util.Map;
-import org.davidpedroguilherme.redesdefilassim.objetos.FilaDTO;
+import org.davidpedroguilherme.redesdefilassim.objetos.FilaEntidade;
 
 public class Config {
 
@@ -10,7 +10,7 @@ public class Config {
   private String modo;
   private List<Integer> seeds;
   private Map<String, Double> chegadas;
-  private Map<String, FilaDTO> filas;
+  private Map<String, FilaEntidade> filas;
   private Map<String, Map<String, Double>> routing;
 
   public Config() {
@@ -18,7 +18,7 @@ public class Config {
   }
 
   public Config(int aleatorioPorSeed, String modo, List<Integer> seeds, Map<String, Double> chegadas,
-      Map<String, FilaDTO> filas, Map<String, Map<String, Double>> routing) {
+                Map<String, FilaEntidade> filas, Map<String, Map<String, Double>> routing) {
     this.aleatorioPorSeed = aleatorioPorSeed;
     this.modo = modo;
     this.seeds = seeds;
@@ -59,11 +59,11 @@ public class Config {
     this.chegadas = chegadas;
   }
 
-  public Map<String, FilaDTO> getFilas() {
+  public Map<String, FilaEntidade> getFilas() {
     return filas;
   }
 
-  public void setFilas(Map<String, FilaDTO> filas) {
+  public void setFilas(Map<String, FilaEntidade> filas) {
     this.filas = filas;
   }
 
