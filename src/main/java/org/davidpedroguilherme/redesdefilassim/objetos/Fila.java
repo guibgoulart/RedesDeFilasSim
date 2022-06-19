@@ -4,7 +4,6 @@ import java.util.Map;
 
 public class Fila {
 
-  final public String[] chavesOrdenadas;
   public double[] filaList;
   private String nome;
   private Double tempoChegada;
@@ -17,6 +16,7 @@ public class Fila {
   private Double minSaida;
   private Double maxSaida;
   private Map<String, Double> routing;
+  final public String[] chavesOrdenadas;
 
   public Fila(String nome, Double tempoChegada, FilaEntidade filaEntidade, Map<String, Double> routing) {
     this.nome = nome;

@@ -45,11 +45,11 @@ public class Main {
       }
 
     // instanciamento de variáveis de execução
-    int aleatorioPorSeed = 100;
-    List<Integer> seeds = Arrays.asList(7, 14, 4783, 432, 11);
+    int aleatorioPorSeed = 100000;
+    List<Integer> seeds = Arrays.asList(11);
     Map<String, Double> chegadas = Map.of("F1", 1.0);
     FilaEntidade f1 = new FilaEntidade(1, null, 1.0, 4.0, 1.0, 1.5);
-    FilaEntidade f2 = new FilaEntidade(1, 3, null, null, 5.0, 10.0);
+    FilaEntidade f2 = new FilaEntidade(3, 5, null, null, 5.0, 10.0);
     FilaEntidade f3 = new FilaEntidade(2, 8, null, null, 10.0, 20.0);
     Map<String, FilaEntidade> filasConfig = Map.of("F1", f1, "F2", f2, "F3", f3);
     LinkedHashMap<String, Double> transferenciasF1 = montarDicionario(List.of("F2", "F3"), List.of(0.8, 0.2));
@@ -180,34 +180,16 @@ public class Main {
     System.out.println("Simulação da fila encerrada.");
   }
 
-  private static String proxFila(String de) { // método para lidar com roteamento de uma fila para outra
-    double random = listaAleatorios.remove(0);
-    Map<String, Double> routing = filas.get(de).getRouting();
-    String[] chavesOrdenadas = filas.get(de).chavesOrdenadas;
-    if (routing == null || chavesOrdenadas == null) {
-      return "";
-    }
-    double aux = 0;
-    for (String key : chavesOrdenadas) { // como uma fila pode ter multiplas saidas e essas saidas tem prob diferentes, precisamos garantir que o periodo vai estar na ordem certa
-      double prox = routing.get(key);
-      if (aux <= random && random <= aux + prox) {
-        return key;
-      }
-      aux += prox;
-    }
-    return "";
-  }
-
   private static void chegada(String fila, double temp) { // método para lidar com chegada
     tempo = temp;
     Fila f = filas.get(fila);
     if (f.getCapacidade() == null || f.getContAtual() < f.getCapacidade()) { // verifica se tem capacidade
       f.setContAtual(f.getContAtual() + 1);
       if (f.getContAtual() <= f.getServidores()) { // verifica se pode realizar auto-atendimento
-        agendaMovimentoFila(fila);
+        agendaMovimentoFila(fila); // agenda chegada
       }
     }
-    listaEscalonador.add(new Escalonador(fila, CHEGADA));
+    listaEscalonador.add(new Escalonador(fila, CHEGADA)); // adiciona uma chegada
   }
 
   private static void passagem(String de, String para, double temp) { // metodo de executar passagem
@@ -222,14 +204,14 @@ public class Main {
 
     origem.setContAtual(origem.getContAtual() - 1);
     if (origem.getContAtual() >= origem.getServidores()) { // verifica se há possibilidade de passagem
-      agendaMovimentoFila(de);
+      agendaMovimentoFila(de); // agenda passagem
     }
     if (dest.getCapacidade() != null && dest.getContAtual() >= dest.getCapacidade()) {
       return;
     }
     dest.setContAtual(dest.getContAtual() + 1);
     if (dest.getContAtual() <= dest.getServidores()) { // verifica se há possibilidade de saída
-      listaEscalonador.add(new Escalonador(para, SAIDA)); // agenda saida
+      listaEscalonador.add(new Escalonador(para, SAIDA)); // executa saída
     }
   }
 
@@ -239,11 +221,11 @@ public class Main {
 
     f.setContAtual(f.getContAtual() - 1);
     if (f.getContAtual() >= f.getServidores()) { // verifica se ha possibilidade de saida
-      agendaMovimentoFila(fila);
+      agendaMovimentoFila(fila); // agenda saida
     }
   }
 
-  private static void agendaMovimentoFila(String fila) { // metodo de agendar eventos
+  private static void agendaMovimentoFila(String fila) { // metodo de agendar passagem ou saida
     String proximaFila = proxFila(fila);
     if (proximaFila.isEmpty()) {
       System.err.println("Fila não tem próximo destino nem saída");
@@ -258,7 +240,7 @@ public class Main {
     return listaEscalonador.stream().min((o1, o2) -> o1.tempoBruto < o2.tempoBruto ? -1 : 1).get();
   }
 
-  private static LinkedHashMap<String, Double> montarDicionario(List<String> chaves, List<Double> valores) { // metodo para facilitar instanciamento
+  private static LinkedHashMap<String, Double> montarDicionario(List<String> chaves, List<Double> valores) { // metodo para facilitar instanciamento dos objetos da fila
     if (chaves.size() != valores.size()) {
         return null;
     }
@@ -314,5 +296,23 @@ public class Main {
           ", aleatorio: " + aleatorio +
           '}';
     }
+  }
+
+  private static String proxFila(String de) { // método para lidar com roteamento de uma fila para outra
+    double random = listaAleatorios.remove(0); // finaliza uma execução
+    Map<String, Double> routing = filas.get(de).getRouting();
+    String[] chavesOrdenadas = filas.get(de).chavesOrdenadas;
+    if (routing == null || chavesOrdenadas == null) {
+      return "";
+    }
+    double aux = 0;
+    for (String key : chavesOrdenadas) { // como uma fila pode ter multiplas saidas e essas saidas tem prob diferentes, precisamos garantir que ele va para a fila correta
+      double prox = routing.get(key);
+      if (aux <= random && random <= aux + prox) {
+        return key; // retorna a proxima fila
+      }
+      aux += prox;
+    }
+    return "";
   }
 }

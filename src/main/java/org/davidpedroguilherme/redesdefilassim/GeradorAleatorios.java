@@ -5,11 +5,6 @@ import java.util.List;
 
 public class GeradorAleatorios {
 
-  private final double A = 1234090.77;
-  private final double M = Math.pow(2, 20);
-  private final double c = 1074020.69;
-  private double x;
-
   public static List<Double> gerarListaAleatorios(int seed, int tamanho) {
     List<Double> resultado = new ArrayList<>();
     Random r = new Random(seed);
@@ -22,9 +17,9 @@ public class GeradorAleatorios {
 
 class Random {
 
-  private final double A = 1234090.77;
-  private final double M = Math.pow(2, 20);
-  private final double c = 1074020.69;
+  private final double A = 8906845906.65;
+  private final double M = Math.pow(2, 22);
+  private final double c = 4832904.32;
   private double x;
 
   public Random(double x) {
