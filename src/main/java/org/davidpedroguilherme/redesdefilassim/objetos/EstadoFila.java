@@ -24,7 +24,9 @@ public class EstadoFila {
   public Map<String, Double> computaPorcentagem() {
     Map<String, Double> porcentagens = new HashMap<>();
     for (int i = 0; i < tempoNaFila.length; i++) {
-      porcentagens.put("" + i, (tempoNaFila[i] / tempoTotal) * 100);
+      if (tempoNaFila[i] != 0) {
+        porcentagens.put("" + i, (tempoNaFila[i] / tempoTotal) * 100);
+      }
     }
     return porcentagens;
   }
@@ -32,7 +34,7 @@ public class EstadoFila {
 
   @Override
   public String toString() {
-    return "org.davidpedroguilherme.redesdefilassim.objetos.Fila {" +
+    return "Fila {" +
         "evento: '" + evento + '\'' +
         ", fila: " + fila +
         ", tempo: " + tempo +
@@ -62,6 +64,17 @@ public class EstadoFila {
 
   public void setTempo(Double tempo) {
     this.tempo = tempo;
+  }
+
+
+  public Map<String, Double> tempoNaFila() {
+    Map<String, Double> tempos = new HashMap<>();
+    for (int i = 0; i < tempoNaFila.length; i++) {
+      if (tempoNaFila[i] != 0) {
+        tempos.put("" + i, tempoNaFila[i]);
+      }
+    }
+    return tempos;
   }
 
   public double[] getTempoNaFila() {

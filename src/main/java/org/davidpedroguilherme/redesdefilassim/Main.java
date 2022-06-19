@@ -10,12 +10,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+
 import org.davidpedroguilherme.redesdefilassim.objetos.EstadoFila;
 import org.davidpedroguilherme.redesdefilassim.objetos.Fila;
 import org.davidpedroguilherme.redesdefilassim.objetos.FilaDTO;
 import org.davidpedroguilherme.redesdefilassim.util.Config;
-import org.davidpedroguilherme.redesdefilassim.util.CsvHelper;
 import org.davidpedroguilherme.redesdefilassim.util.FilaBuilder;
 
 public class Main {
@@ -23,6 +22,8 @@ public class Main {
   static final String CHEGADA = "chegada";
   static final String PASSAGEM = "passagem";
   static final String SAIDA = "saida";
+
+  static Double tempoTotal;
 
   static Double tempo = 0.00;
   static int execucoes;
@@ -32,9 +33,6 @@ public class Main {
   static ArrayList<Double> listaAleatorios;
 
   public static void main(String[] args) throws IOException {
-//    if (args.length == 0) {
-//        return;
-//    }
 
     // criação de arquivos de output
     File outputDir = new File("./output");
@@ -61,11 +59,39 @@ public class Main {
     Map<String, Map<String, Double>> transferencias = Map.of("F1", transferenciasF1, "F2", transferenciasF2, "F3",
         transferenciasF3);
 
-//    boolean withCsv = args.length == 1 && Objects.equals(args[0], "with-csv");
     Config config = new Config(aleatorioPorSeed, "tandem", seeds, chegadas, filasConfig, transferencias);
 
     // numero de execuçoes
     execucoes = config.getSeeds().size();
+
+    BufferedWriter writer = new BufferedWriter(new FileWriter(output, true)); // inicia escrita nos arquivos
+
+    writer.write("\n" +
+            "\n" +
+            "                                                       \n" +
+            " ____ ___ __  __ _   _ _        _    ____   ___  ____  \n" +
+            "/ ___|_ _|  \\/  | | | | |      / \\  |  _ \\ / _ \\|  _ \\ \n" +
+            "\\___ \\| || |\\/| | | | | |     / _ \\ | | | | | | | |_) |\n" +
+            " ___) | || |  | | |_| | |___ / ___ \\| |_| | |_| |  _ < \n" +
+            "|____|___|_|  |_|\\___/|_____/_/   \\_|____/ \\___/|_| \\_\\\n" +
+            "                                                       \n" +
+            "                                                       \n" +
+            "                     ____  _____                       \n" +
+            "                    |  _ \\| ____|                      \n" +
+            "                    | | | |  _|                        \n" +
+            "                    | |_| | |___                       \n" +
+            "                    |____/|_____|                      \n" +
+            "                                                       \n" +
+            "                                                       \n" +
+            "            _____ ___ _        _    ____               \n" +
+            "           |  ___|_ _| |      / \\  / ___|              \n" +
+            "           | |_   | || |     / _ \\ \\___ \\              \n" +
+            "           |  _|  | || |___ / ___ \\ ___) |             \n" +
+            "           |_|   |___|_____/_/   \\_|____/              \n" +
+            "                                                       \n" +
+            "\n");
+    writer.write("Desenvolvido em junho de 2022 por Guilherme Goulart, Pedro Portella e David Neto\n");
+    writer.write("Para a cadeira de Simulação e Métodos Analíticos da PUCRS ministrada pelo professor Afonso Sales\n\n");
 
     for (int i = 0; i < execucoes; i++) {
       // qual seed estamos usando
@@ -123,51 +149,32 @@ public class Main {
         }
       }
 
-      BufferedWriter writer = new BufferedWriter(new FileWriter(output, true)); // inicia escrita nos arquivos
-
-      writer.write("\n" +
-              "\n" +
-              "                                                       \n" +
-              " ____ ___ __  __ _   _ _        _    ____   ___  ____  \n" +
-              "/ ___|_ _|  \\/  | | | | |      / \\  |  _ \\ / _ \\|  _ \\ \n" +
-              "\\___ \\| || |\\/| | | | | |     / _ \\ | | | | | | | |_) |\n" +
-              " ___) | || |  | | |_| | |___ / ___ \\| |_| | |_| |  _ < \n" +
-              "|____|___|_|  |_|\\___/|_____/_/   \\_|____/ \\___/|_| \\_\\\n" +
-              "                                                       \n" +
-              "                                                       \n" +
-              "                     ____  _____                       \n" +
-              "                    |  _ \\| ____|                      \n" +
-              "                    | | | |  _|                        \n" +
-              "                    | |_| | |___                       \n" +
-              "                    |____/|_____|                      \n" +
-              "                                                       \n" +
-              "                                                       \n" +
-              "            _____ ___ _        _    ____               \n" +
-              "           |  ___|_ _| |      / \\  / ___|              \n" +
-              "           | |_   | || |     / _ \\ \\___ \\              \n" +
-              "           |  _|  | || |___ / ___ \\ ___) |             \n" +
-              "           |_|   |___|_____/_/   \\_|____/              \n" +
-              "                                                       \n" +
-              "\n");
-      writer.write("Desenvolvido em junho de 2022 por Guilherme Goulart, Pedro Portella e David Neto");
-      writer.write("Para a cadeira de Simulação e Métodos Analíticos da PUCRS ministrada pelo professor Afonso Sales");
-      writer.write("Execução: " + (i + 1) + ":\n");
+      writer.write("Simulação: #" + (i + 1) + "\n\n");
       for (Map.Entry<String, List<EstadoFila>> item : estadoFilas.entrySet()) {
+        writer.write("*********************************************\n");
         writer.write("Fila: " + item.getKey() + "\n");
-        writer.write("Estado final da fila: " + item.getValue().get(item.getValue().size() - 1) + "\n");
-        writer.write(
-            "Porcentagens: " + item.getValue().get(item.getValue().size() - 1).computaPorcentagem().toString() + "\n");
-        writer.write("Tempo total: " + item.getValue().get(item.getValue().size() - 1).getTempoTotal() + "\n");
-        writer.write("#############################################\n");
-        Integer aux = filas.get(item.getKey()).getCapacidade();
-//          if (withCsv) {
-//            CsvHelper.saveCsvFile(new File("./output/output" + (i + 1) + item.getKey() + ".csv"), item.getValue(),
-//              aux == null ? 100 : aux + 1);
-//          }
+        writer.write("Estado: " + "      " + "Tempo: " + "          " + "Porcentagem: " + "      " + "\n");
+        item.getValue().get(item.getValue().size() - 1).tempoNaFila().forEach(
+          (key, value) ->
+          {
+            try {
+              writer.write(key + "      " + value + "      " + item.getValue().get(item.getValue().size() - 1).computaPorcentagem().get(key) + "\n");
+            } catch (IOException e) {
+              throw new RuntimeException(e);
+            }
+          }
+        );
+        tempoTotal = item.getValue().get(item.getValue().size() - 1).getTempoTotal();
       }
-      writer.write("\n\n");
-      writer.close();
+      writer.write("=============================================\n");
+      writer.write("Tempo total: " + tempoTotal.toString() + "\n");
+      writer.write("=============================================\n");
+
+      writer.write("\n");
+      writer.write("#############################################\n");
+      writer.write("\n");
     }
+    writer.close();
     System.out.println("Simulação da fila encerrada.");
   }
 
